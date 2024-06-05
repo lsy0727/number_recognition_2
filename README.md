@@ -13,6 +13,7 @@ center : 무게중심의 위치를 비율(%)로 구한다.
 
 # 함수
 https://github.com/lsy0727/number_recognition_2/blob/6cbb6eecec6b4ffd60a32495d4dc7ab99b134084/number_recognition.cpp#L119C1-L129C2
+
 Mat morph(Mat img) {	//모폴로지 연산
 	Mat bin;
 	draw_img = img(Rect(0, 0, 500, 500));
