@@ -145,20 +145,20 @@ int ProjectRun(Mat img, int count) {
 	int stroke_count = getStrokeCount(count);
 
 	if (contour_count == 3) return 8;	//외곽선 3개
-	else if (contour_count == 2) {	//외곽선 2개
+	else if (contour_count == 2) {	//외곽선 2개 - 0,4,6,9
 		if (stroke_count == 2) return 4;	//2획
-		else if (stroke_count == 1) {	//1획
+		else if (stroke_count == 1) {	//1획 - 0,6,9
 			if (abs(center_pt.x - center_pt.y) < 10) return 0;
 			else if (center_pt.y < 50) return 9;
 			else if (center_pt.y > 50) return 6;
 		}
 	}
-	else if (contour_count == 1) {
-		if (stroke_count == 2) {
-			if (abs(center_pt.x - center_pt.y) > 15) return 7;
+	else if (contour_count == 1) {	//외곽선 1개 - 1,2,3,5,7
+		if (stroke_count == 2) {	//2획 - 5, 7
+			if (abs(center_pt.x - center_pt.y) >= 15) return 7;
 			else return 5;
 		}
-		else if (stroke_count == 1) {
+		else if (stroke_count == 1) {	//1획 - 1,2,3,7
 
 		}
 	}
