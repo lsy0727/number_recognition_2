@@ -12,8 +12,8 @@ string file_name;
 
 void on_mouse(int event, int x, int y, int flags, void*);	//마우스 이벤트
 void img_UI(Mat& img);	//영상 UI 그리기 함수
-Mat bounding_img(Mat img);	//바운딩박스
 Mat morph(Mat img);	//모폴로지 연산
+Mat bounding_img(Mat img);	//바운딩박스
 
 int main() {
 	img_UI(img);	//UI그리기 함수 호출
@@ -44,14 +44,14 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 	switch (event) {
 	case EVENT_LBUTTONDOWN:
 		ptOld = Point(x, y);
-		if (rect_area[1].contains(ptOld)) {	//save
+		if (rect_area[1].contains(Point(x, y))) {	//save
 			cout << "save press" << endl;
 			cout << "저장할 파일명을 입력 : ";
 			getline(cin, file_name);
 			Mat save_img = img(Rect(0, 0, 500, 500));
 			imwrite(file_name, save_img);
 		}
-		else if (rect_area[2].contains(ptOld)) {	//load
+		else if (rect_area[2].contains(Point(x, y))) {	//load
 			cout << "load press" << endl;
 			cout << "불러올 파일명을 입력 : ";
 			getline(cin, file_name);
@@ -116,17 +116,6 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		break;
 	}
 }
-Mat bounding_img(Mat img) {	//바운딩 박스
-	Mat bin = morph(img);
-
-	Mat labels, stats, centroids;
-	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
-
-	int* p = stats.ptr<int>(1);
-	
-	bin = bin(Rect(p[0], p[1], p[2], p[3]));
-	return bin;
-}
 Mat morph(Mat img) {	//모폴로지 연산
 	Mat bin;
 	draw_img = img(Rect(0, 0, 500, 500));
@@ -136,14 +125,25 @@ Mat morph(Mat img) {	//모폴로지 연산
 	Mat labels, stats, centroids;
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
 	int morph_size = 10;
-	if (cnt > 2) {
-		while (true) {
-			morphologyEx(bin, bin, MORPH_CLOSE, Mat(morph_size, morph_size, CV_8UC1));
-			cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
-			if (cnt <= 2) break;
-			morph_size += 3;
-		}
+	while (true) {
+		morphologyEx(bin, bin, MORPH_CLOSE, Mat::ones(morph_size, morph_size, CV_8UC1));
+		cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
+		if (cnt <= 2) break;
+		morph_size += 3;
 	}
+	
+	return bin;
+}
+
+Mat bounding_img(Mat img) {	//바운딩 박스
+	Mat bin = morph(img);
+
+	Mat labels, stats, centroids;
+	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
+
+	int* p = stats.ptr<int>(1);
+
+	bin = bin(Rect(p[0], p[1], p[2], p[3]));
 	return bin;
 }
 
