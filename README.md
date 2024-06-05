@@ -1,6 +1,7 @@
 # number_recognition_2
  
 # 추가 내용
+
 ### 특징
 contour : 외곽선의 갯수
 
