@@ -7,12 +7,11 @@ Mat img(500, 900, CV_8UC3, Scalar(255, 255, 255));	//3채널 컬러영상
 Mat img_size(500 / 5, 200, CV_8UC3, Scalar(255, 255, 255));
 Mat draw_img;
 Mat gray, bin;
-Point ptOld;
+Point ptOld, startpt1, startpt2, endpt;
 string file_name;
-
 void on_mouse(int event, int x, int y, int flags, void*);	//마우스 이벤트
 void img_UI(Mat& img);	//영상 UI 그리기 함수
-Mat morph(Mat img);	//모폴로지 연산
+Mat morph(Mat img, Point staratpt1, Point startpt2, Point endpt, int count);	//모폴로지 연산
 Mat bounding_img(Mat img);	//바운딩박스
 
 int main() {
@@ -27,6 +26,7 @@ int main() {
 }
 
 void on_mouse(int event, int x, int y, int flags, void*) {
+	static int count = 0;	//획 수를 카운팅하기 위한 변수
 	imshow("img", img);
 	Rect rect_area[] = {
 		Rect(0, 0, 500, 500),	//0. 입력창 영역
@@ -42,8 +42,11 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		Rect(700, 500 * 4 / 5 + 1, 199, 99)	//10.
 	};
 	switch (event) {
+	startpt1, startpt2, endpt;
 	case EVENT_LBUTTONDOWN:
 		ptOld = Point(x, y);
+		if (count == 0) startpt1 = Point(x, y);
+		else if (count == 1) startpt2 = Point(x, y);
 		if (rect_area[1].contains(Point(x, y))) {	//save
 			cout << "save press" << endl;
 			cout << "저장할 파일명을 입력 : ";
@@ -61,6 +64,7 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		else if (rect_area[3].contains(Point(x, y))) {	//clear
 			cout << "clear press" << endl;
 			rectangle(img, Rect(0, 0, 501, 501), Scalar(255, 255, 255), -1);
+			count = 0;
 		}
 		else if (rect_area[4].contains(Point(x, y))) {	//run
 			cout << "run press" << endl;
@@ -74,7 +78,7 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		else if (rect_area[6].contains(Point(x, y))) {	//contour
 			cout << "contour press" << endl;
 
-			bin = morph(img);
+			bin = morph(img, startpt1, startpt2, endpt, count);
 			vector<vector<Point>> contours;
 			findContours(bin, contours, RETR_LIST, CHAIN_APPROX_NONE);
 			cout << "외곽선 갯수 : " << contours.size() << endl;
@@ -106,17 +110,23 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 			imshow("bounding box", bin);
 		}
 		break;
+	case EVENT_LBUTTONUP:
+		if (rect_area[0].contains(Point(x, y))) {
+			endpt = Point(x, y);
+			count++;
+		}
+		break;
 	case EVENT_MOUSEMOVE:
 		if (rect_area[0].contains(Point(x, y))) {
 			if (flags & EVENT_FLAG_LBUTTON) {
-				line(img, ptOld, Point(x, y), Scalar(0, 0, 0), 10);
+				line(img, ptOld, Point(x, y), Scalar(0), 10);
 				ptOld = Point(x, y);
 			}
 		}
 		break;
 	}
 }
-Mat morph(Mat img) {	//모폴로지 연산
+Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) {	//모폴로지 연산
 	Mat bin;
 	draw_img = img(Rect(0, 0, 500, 500));
 	cvtColor(draw_img, gray, COLOR_BGR2GRAY);
@@ -124,6 +134,19 @@ Mat morph(Mat img) {	//모폴로지 연산
 
 	Mat labels, stats, centroids;
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
+	if (count == 1) {
+		double distance = sqrt(pow(endpt.x - startpt1.x, 2) + pow(endpt.y - startpt1.y, 2));
+		if (distance < 150) {
+			line(bin, startpt1, endpt, Scalar(255), 5);
+		}
+	}
+	else if (count == 2) {
+		double distance = sqrt(pow(startpt2.x - startpt1.x, 2) + pow(startpt2.y - startpt1.y, 2));
+		if (distance < 150) {
+			line(bin, startpt1, startpt2, Scalar(255), 5);
+		}
+	}
+
 	int morph_size = 10;
 	while (true) {
 		morphologyEx(bin, bin, MORPH_CLOSE, Mat::ones(morph_size, morph_size, CV_8UC1));
@@ -131,13 +154,12 @@ Mat morph(Mat img) {	//모폴로지 연산
 		if (cnt <= 2) break;
 		morph_size += 3;
 	}
-	
+
 	return bin;
 }
 
 Mat bounding_img(Mat img) {	//바운딩 박스
-	Mat bin = morph(img);
-
+	Mat bin = morph(img, startpt1, startpt2, endpt, 0);
 	Mat labels, stats, centroids;
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
 
