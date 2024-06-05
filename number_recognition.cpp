@@ -8,7 +8,7 @@ Mat img_size(500 / 5, 200, CV_8UC3, Scalar(255, 255, 255));
 Mat draw_img;
 Mat gray, bin;
 Point ptOld, startpt1, startpt2, endpt;
-string file_name;
+string file_name, window_name;
 void on_mouse(int event, int x, int y, int flags, void*);	//마우스 이벤트
 void img_UI(Mat& img);	//영상 UI 그리기 함수
 Mat morph(Mat img, Point staratpt1, Point startpt2, Point endpt, int count);	//모폴로지 연산
@@ -24,7 +24,12 @@ int main() {
 	waitKey();
 	return 0;
 }
-
+void close_window() {
+	if (!window_name.empty()) {
+		destroyWindow(window_name);
+		window_name = "";
+	}
+}
 void on_mouse(int event, int x, int y, int flags, void*) {
 	static int count = 0;	//획 수를 카운팅하기 위한 변수
 	imshow("img", img);
@@ -77,6 +82,9 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		}
 		else if (rect_area[6].contains(Point(x, y))) {	//contour
 			cout << "contour press" << endl;
+			if(window_name != "contour")
+				close_window();
+			window_name = "contour";
 
 			bin = morph(img, startpt1, startpt2, endpt, count);
 			vector<vector<Point>> contours;
@@ -91,12 +99,15 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 			else if (contours.size() == 3) {
 				cout << "예상 결과 : 8" << endl;
 			}
-			imshow("contour", bin);
+			imshow(window_name, bin);
 		}
 		else if (rect_area[7].contains(Point(x, y))) {	//무게중심
 			cout << "center press" << endl;
+			if (window_name != "center")
+				close_window();
+			window_name = "center";
 
-			Mat bin = bounding_img(img);
+			bin = morph(img, startpt1, startpt2, endpt, count);
 
 			Mat labels, stats, centroids;
 			int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
@@ -107,18 +118,24 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 			int per_x = (double)center_x / (width + center_x) * 100;
 			int per_y = (double)center_y / (height + center_y) * 100;
 			cout << per_x << "%" << endl << per_y << "%" << endl;
-			imshow("bounding box", bin);
+			imshow(window_name, bin);
 		}
 		else if (rect_area[8].contains(Point(x, y))) {	//획
 			cout << "stroke press" << endl;
+			if (window_name != "stroke")
+				close_window();
+			window_name = "stroke";
 
-			cout << "전체 획 수 : " << count;
+			bin = morph(img, startpt1, startpt2, endpt, count);
+
+			cout << "전체 획 수 : " << count << endl;
 			if (count == 1) {
 				cout << "예상 결과 : 0, 1, 2, 3, 6, 7, 8, 9" << endl;
 			}
 			else if (count == 2) {
 				cout << "예상 결과 : 4, 5, 7" << endl;
 			}
+			imshow(window_name, bin);
 		}
 		break;
 	case EVENT_LBUTTONUP:
@@ -147,13 +164,13 @@ Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) {	//�
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
 	if (count == 1) {	//1획이면 시작점과 끝점 거리 비교
 		double distance = sqrt(pow(endpt.x - startpt1.x, 2) + pow(endpt.y - startpt1.y, 2));
-		if (distance < 150) {
+		if (distance < 50) {
 			line(bin, startpt1, endpt, Scalar(255), 5);
 		}
 	}
 	else if (count == 2) {	//2획이면 각 획의 시작점 거리 비교
 		double distance = sqrt(pow(startpt2.x - startpt1.x, 2) + pow(startpt2.y - startpt1.y, 2));
-		if (distance < 150) {
+		if (distance < 50) {
 			line(bin, startpt1, startpt2, Scalar(255), 5);
 		}
 	}
