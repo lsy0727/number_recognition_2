@@ -1,14 +1,14 @@
 # number_recognition_2
  
 # 추가 내용
-### 특징 : contour, center, stroke
+### 특징
 contour : 외곽선의 갯수
 
 center : 무게중심의 위치 비율(%)
 
 stroke : 획 수
 
-### 함수 : morph, bounding_img, getContourCount, getCenterPt, getStrokeCount
+### 함수
 Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) : img영상의 객체에 모폴로지 연산을 수행하는 함수
 
 Mat bounding_img(Mat img, int count) : img영상의 객체부분을 추출하기 위한 함수
