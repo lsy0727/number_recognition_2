@@ -103,10 +103,10 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		else if (rect_area[7].contains(Point(x, y))) {	//무게중심
 			cout << "center press" << endl;
 			
-			Point centerpt = getCenterpt(img, count);
+			Point centerPos = getCenterPt(img, count);
 
-			cout << "X : " << centerpt.x << "%" << endl;
-			cout << "Y : " << centerpt.y << "%" << endl;
+			cout << "X : " << centerPos.x << "%" << endl;
+			cout << "Y : " << centerPos.y << "%" << endl;
 		}
 		else if (rect_area[8].contains(Point(x, y))) {	//획
 			cout << "stroke press" << endl;
@@ -141,10 +141,10 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 }
 int ProjectRun(Mat img, int count) {
 	int contour_count = getContourCount(img, count);
-	Point center_pt = getCenterpt(img, count);
+	Point center_pt = getCenterPt(img, count);
 	int stroke_count = getStrokeCount(count);
 
-	if (contour_count == 3) return 8;	//외곽선 3개
+	if (contour_count == 3) return 8;	//외곽선 3개 
 	else if (contour_count == 2) {	//외곽선 2개 - 0,4,6,9
 		if (stroke_count == 2) return 4;	//2획
 		else if (stroke_count == 1) {	//1획 - 0,6,9
@@ -154,12 +154,12 @@ int ProjectRun(Mat img, int count) {
 		}
 	}
 	else if (contour_count == 1) {	//외곽선 1개 - 1,2,3,5,7
-		if (stroke_count == 2) {	//2획 - 5, 7
-			if (abs(center_pt.x - center_pt.y) >= 15) return 7;
+		if (stroke_count == 2) {	//2획 - 5,7
+			if (abs(center_pt.x - center_pt.y) > 15) return 7;
 			else return 5;
 		}
 		else if (stroke_count == 1) {	//1획 - 1,2,3,7
-
+			if (abs(center_pt.x - center_pt.y) > 15) return 7;
 		}
 	}
 }
@@ -170,7 +170,7 @@ int getContourCount(Mat img, int count) {	//외곽선 개수
 	imshow("boundingbox", bin);
 	return contours.size();
 }
-Point getCenterpt(Mat img, int count) {	//무게중심 좌표 비
+Point getCenterPt(Mat img, int count) {	//무게중심 좌표 비
 	bin = bounding_img(img, count);
 
 	Mat labels, stats, centroids;
