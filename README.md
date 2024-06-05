@@ -1,7 +1,7 @@
 # number_recognition_2
  
 # 추가 내용
-### 함수 : bounding_img, morph
+### 함수 : morph, bounding_img, getContourCount, getCenterPos, getStrokeCount
 Mat bounding_img(Mat img) : img영상의 객체부분을 추출하기 위한 함수
 
 Mat morph(Mat img) : img영상의 객체에 모폴로지 연산을 수행하는 함수
