@@ -37,7 +37,7 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		Rect(501, 500 * 4 / 5 + 1, 199, 99),	//5. exit 영역
 		Rect(700, 0, 199, 99),	//6. contour 영역
 		Rect(700, 500 / 5 + 1, 199, 99),	//7. center 영역
-		Rect(700, 500 * 2 / 5 + 1, 199, 99),	//8.
+		Rect(700, 500 * 2 / 5 + 1, 199, 99),	//8. stroke 영역
 		Rect(700, 500 * 3 / 5 + 1, 199, 99),	//9.
 		Rect(700, 500 * 4 / 5 + 1, 199, 99)	//10.
 	};
@@ -109,6 +109,17 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 			cout << per_x << "%" << endl << per_y << "%" << endl;
 			imshow("bounding box", bin);
 		}
+		else if (rect_area[8].contains(Point(x, y))) {	//획
+			cout << "stroke press" << endl;
+
+			cout << "전체 획 수 : " << count;
+			if (count == 1) {
+				cout << "예상 결과 : 0, 1, 2, 3, 6, 7, 8, 9" << endl;
+			}
+			else if (count == 2) {
+				cout << "예상 결과 : 4, 5, 7" << endl;
+			}
+		}
 		break;
 	case EVENT_LBUTTONUP:
 		if (rect_area[0].contains(Point(x, y))) {
@@ -148,12 +159,15 @@ Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) {	//�
 	}
 
 	int morph_size = 10;
-	while (true) {
-		morphologyEx(bin, bin, MORPH_CLOSE, Mat::ones(morph_size, morph_size, CV_8UC1));
-		cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
-		if (cnt <= 2) break;
-		morph_size += 3;
+	if (cnt > 2) {
+		while (true) {
+			morphologyEx(bin, bin, MORPH_CLOSE, Mat(morph_size, morph_size, CV_8UC1));
+			cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
+			if (cnt <= 2) break;
+			morph_size += 3;
+		}
 	}
+	
 
 	return bin;
 }
@@ -180,7 +194,7 @@ void img_UI(Mat& img) {
 
 	//UI설계
 	vector<vector<string>> text = { {"Save", "Load", "Clear", "Run", "Exit"},
-		{"contour", "center", "feature3", "feature4", "feafure5"} };
+		{"contour", "center", "stroke", "feature4", "feafure5"} };
 	int fontface = FONT_HERSHEY_SIMPLEX;	//폰트 종류
 	double fontscale = 1.0;	//폰트 크기
 	int thickness = 2;	//글씨 두께
