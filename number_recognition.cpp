@@ -134,13 +134,13 @@ Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) {	//�
 
 	Mat labels, stats, centroids;
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
-	if (count == 1) {
+	if (count == 1) {	//1획이면 시작점과 끝점 거리 비교
 		double distance = sqrt(pow(endpt.x - startpt1.x, 2) + pow(endpt.y - startpt1.y, 2));
 		if (distance < 150) {
 			line(bin, startpt1, endpt, Scalar(255), 5);
 		}
 	}
-	else if (count == 2) {
+	else if (count == 2) {	//2획이면 각 획의 시작점 거리 비교
 		double distance = sqrt(pow(startpt2.x - startpt1.x, 2) + pow(startpt2.y - startpt1.y, 2));
 		if (distance < 150) {
 			line(bin, startpt1, startpt2, Scalar(255), 5);
