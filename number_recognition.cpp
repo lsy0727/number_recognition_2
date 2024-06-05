@@ -1,129 +1,129 @@
-//#include<iostream>
-//#include<opencv2/opencv.hpp>
-//using namespace std;
-//using namespace cv;
-//
-//Mat img(500, 900, CV_8UC3, Scalar(255, 255, 255));	//3Ã¤³Î ÄÃ·¯¿µ»ó
-//Mat img_size(500 / 5, 200, CV_8UC3, Scalar(255, 255, 255));
-//Mat contour_img;
-//Mat gray, bin, rev;
-//Point ptOld;
-//string file_name;
-//
-//void on_mouse(int event, int x, int y, int flags, void*);	//¸¶¿ì½º ÀÌº¥Æ®
-//void img_UI(Mat& img);	//¿µ»ó UI ±×¸®±â ÇÔ¼ö
-//
-//int main() {
-//	img_UI(img);	//UI±×¸®±â ÇÔ¼ö È£Ãâ
-//
-//	namedWindow("img");
-//	setMouseCallback("img", on_mouse);	//¸¶¿ì½ºÀÌº¥Æ® ÇÔ¼ö È£Ãâ
-//
-//	imshow("img", img);
-//	waitKey();
-//	return 0;
-//}
-//
-//void on_mouse(int event, int x, int y, int flags, void*) {
-//	imshow("img", img);
-//	Rect rect_area[] = {
-//		Rect(0, 0, 500, 500),	//ÀÔ·ÂÃ¢ ¿µ¿ª
-//		Rect(501, 0, 199, 99),	//save ¿µ¿ª
-//		Rect(501, 500 / 5 + 1, 199, 99),	//load ¿µ¿ª
-//		Rect(501, 500 * 2 / 5 + 1, 199, 99),	//clear ¿µ¿ª
-//		Rect(501, 500 * 3 / 5 + 1, 199, 99),	//run ¿µ¿ª
-//		Rect(501, 500 * 4 / 5 + 1, 199, 99),	//exit ¿µ¿ª
-//		Rect(700, 0, 199, 99),	//contour ¿µ¿ª
-//		Rect(700, 500 / 5 + 1, 199, 99),
-//		Rect(700, 500 * 2 / 5 + 1, 199, 99),
-//		Rect(700, 500 * 3 / 5 + 1, 199, 99),
-//		Rect(700, 500 * 4 / 5 + 1, 199, 99)
-//	};
-//	switch (event) {
-//	case EVENT_LBUTTONDOWN:
-//		ptOld = Point(x, y);
-//		if (rect_area[1].contains(ptOld)) {	//save
-//			cout << "save press" << endl;
-//			cout << "ÀúÀåÇÒ ÆÄÀÏ¸íÀ» ÀÔ·Â : ";
-//			getline(cin, file_name);
-//			Mat save_img = img(Rect(0, 0, 500, 500));
-//			imwrite(file_name, save_img);
-//		}
-//		else if (rect_area[2].contains(ptOld)) {	//load
-//			cout << "load press" << endl;
-//			cout << "ºÒ·¯¿Ã ÆÄÀÏ¸íÀ» ÀÔ·Â : ";
-//			getline(cin, file_name);
-//			Mat load_img = imread(file_name);
-//			load_img.copyTo(img(Rect(0, 0, 500, 500)));
-//		}
-//		else if (rect_area[3].contains(Point(x, y))) {	//clear
-//			cout << "clear press" << endl;
-//			rectangle(img, Rect(0, 0, 501, 501), Scalar(255, 255, 255), -1);
-//		}
-//		else if (rect_area[4].contains(Point(x, y))) {	//run
-//			cout << "run press" << endl;
-//
-//		}
-//		else if (rect_area[5].contains(Point(x, y))) {	//exit
-//			cout << "exit press" << endl;
-//			cout << "ÇÁ·Î±×·¥ Á¾·á" << endl;
-//			exit(0);	//Á¾·á
-//		}
-//		else if (rect_area[6].contains(Point(x, y))) {	//contour
-//			cout << "contour press" << endl;
-//
-//			contour_img = img(Rect(0, 0, 500, 500));
-//			cvtColor(contour_img, gray, COLOR_BGR2GRAY);
-//			threshold(gray, bin, 0, 255, THRESH_BINARY | THRESH_OTSU);
-//			rev = ~bin;
-//			vector<vector<Point>> contours;
-//			findContours(rev, contours, RETR_LIST, CHAIN_APPROX_NONE);
-//
-//			cout << "¿Ü°û¼± °¹¼ö : " << contours.size() << endl;
-//			if (contours.size() == 1) {
-//				cout << "¿¹»ó °á°ú : 1, 2, 3, 5, 7" << endl;
-//			}
-//			else if (contours.size() == 2) {
-//				cout << "¿¹»ó °á°ú : 0, 4, 6, 9" << endl;
-//			}
-//			else if (contours.size() == 3) {
-//				cout << "¿¹»ó °á°ú : 8" << endl;
-//			}
-//		}
-//		break;
-//	case EVENT_MOUSEMOVE:
-//		if (rect_area[0].contains(Point(x, y))) {
-//			if (flags & EVENT_FLAG_LBUTTON) {
-//				line(img, ptOld, Point(x, y), Scalar(0, 0, 0), 10);
-//				ptOld = Point(x, y);
-//			}
-//		}
-//		break;
-//	}
-//}
-//
-//void img_UI(Mat& img) {
-//	//Ä­ ³ª´©±â
-//	line(img, Point(502, 0), Point(502, 500), Scalar(0, 0, 0), 2);
-//	line(img, Point(700, 0), Point(700, 500), Scalar(0, 0, 0), 2);
-//	for (int i = 1; i < 5; i++) {
-//		line(img, Point(502, 500 * i / 5), Point(700, 500 * i / 5), Scalar(0, 0, 0), 2);
-//		line(img, Point(700, 500 * i / 5), Point(900, 500 * i / 5), Scalar(0, 0, 0), 2);
-//	}
-//
-//	//UI¼³°è
-//	vector<vector<string>> text = { {"Save", "Load", "Clear", "Run", "Exit"},
-//		{"contour", "feature2", "feature3", "feature4", "feafure5"} };
-//	int fontface = FONT_HERSHEY_SIMPLEX;	//ÆùÆ® Á¾·ù
-//	double fontscale = 1.0;	//ÆùÆ® Å©±â
-//	int thickness = 2;	//±Û¾¾ µÎ²²
-//	for (int i = 0; i < text.size(); i++) {
-//		for (int j = 0; j < text[i].size(); j++) {
-//			Size TextSize = getTextSize(text[i][j], fontface, fontscale, thickness, 0);	//±Û¾¾ Å©±â
-//			Size imgsize = img_size.size();	//°´Ã¼ »çÀÌÁî
-//			Point org(500 + i * 200 + (imgsize.width - TextSize.width) / 2,
-//				500 * j / 5 + (imgsize.height + TextSize.height) / 2);
-//			putText(img, text[i][j], org, fontface, fontscale, Scalar(0, 0, 0), thickness);
-//		}
-//	}
-//}
+#include<iostream>
+#include<opencv2/opencv.hpp>
+using namespace std;
+using namespace cv;
+
+Mat img(500, 900, CV_8UC3, Scalar(255, 255, 255));	//3ì±„ë„ ì»¬ëŸ¬ì˜ìƒ
+Mat img_size(500 / 5, 200, CV_8UC3, Scalar(255, 255, 255));
+Mat contour_img;
+Mat gray, bin, rev;
+Point ptOld;
+string file_name;
+
+void on_mouse(int event, int x, int y, int flags, void*);	//ë§ˆìš°ìŠ¤ ì´ë²¤íŠ¸
+void img_UI(Mat& img);	//ì˜ìƒ UI ê·¸ë¦¬ê¸° í•¨ìˆ˜
+
+int main() {
+	img_UI(img);	//UIê·¸ë¦¬ê¸° í•¨ìˆ˜ í˜¸ì¶œ
+
+	namedWindow("img");
+	setMouseCallback("img", on_mouse);	//ë§ˆìš°ìŠ¤ì´ë²¤íŠ¸ í•¨ìˆ˜ í˜¸ì¶œ
+
+	imshow("img", img);
+	waitKey();
+	return 0;
+}
+
+void on_mouse(int event, int x, int y, int flags, void*) {
+	imshow("img", img);
+	Rect rect_area[] = {
+		Rect(0, 0, 500, 500),	//ì…ë ¥ì°½ ì˜ì—­
+		Rect(501, 0, 199, 99),	//save ì˜ì—­
+		Rect(501, 500 / 5 + 1, 199, 99),	//load ì˜ì—­
+		Rect(501, 500 * 2 / 5 + 1, 199, 99),	//clear ì˜ì—­
+		Rect(501, 500 * 3 / 5 + 1, 199, 99),	//run ì˜ì—­
+		Rect(501, 500 * 4 / 5 + 1, 199, 99),	//exit ì˜ì—­
+		Rect(700, 0, 199, 99),	//contour ì˜ì—­
+		Rect(700, 500 / 5 + 1, 199, 99),
+		Rect(700, 500 * 2 / 5 + 1, 199, 99),
+		Rect(700, 500 * 3 / 5 + 1, 199, 99),
+		Rect(700, 500 * 4 / 5 + 1, 199, 99)
+	};
+	switch (event) {
+	case EVENT_LBUTTONDOWN:
+		ptOld = Point(x, y);
+		if (rect_area[1].contains(ptOld)) {	//save
+			cout << "save press" << endl;
+			cout << "ì €ì¥í•  íŒŒì¼ëª…ì„ ì…ë ¥ : ";
+			getline(cin, file_name);
+			Mat save_img = img(Rect(0, 0, 500, 500));
+			imwrite(file_name, save_img);
+		}
+		else if (rect_area[2].contains(ptOld)) {	//load
+			cout << "load press" << endl;
+			cout << "ë¶ˆëŸ¬ì˜¬ íŒŒì¼ëª…ì„ ì…ë ¥ : ";
+			getline(cin, file_name);
+			Mat load_img = imread(file_name);
+			load_img.copyTo(img(Rect(0, 0, 500, 500)));
+		}
+		else if (rect_area[3].contains(Point(x, y))) {	//clear
+			cout << "clear press" << endl;
+			rectangle(img, Rect(0, 0, 501, 501), Scalar(255, 255, 255), -1);
+		}
+		else if (rect_area[4].contains(Point(x, y))) {	//run
+			cout << "run press" << endl;
+
+		}
+		else if (rect_area[5].contains(Point(x, y))) {	//exit
+			cout << "exit press" << endl;
+			cout << "í”„ë¡œê·¸ë¨ ì¢…ë£Œ" << endl;
+			exit(0);	//ì¢…ë£Œ
+		}
+		else if (rect_area[6].contains(Point(x, y))) {	//contour
+			cout << "contour press" << endl;
+
+			contour_img = img(Rect(0, 0, 500, 500));
+			cvtColor(contour_img, gray, COLOR_BGR2GRAY);
+			threshold(gray, bin, 0, 255, THRESH_BINARY | THRESH_OTSU);
+			rev = ~bin;
+			vector<vector<Point>> contours;
+			findContours(rev, contours, RETR_LIST, CHAIN_APPROX_NONE);
+
+			cout << "ì™¸ê³½ì„  ê°¯ìˆ˜ : " << contours.size() << endl;
+			if (contours.size() == 1) {
+				cout << "ì˜ˆìƒ ê²°ê³¼ : 1, 2, 3, 5, 7" << endl;
+			}
+			else if (contours.size() == 2) {
+				cout << "ì˜ˆìƒ ê²°ê³¼ : 0, 4, 6, 9" << endl;
+			}
+			else if (contours.size() == 3) {
+				cout << "ì˜ˆìƒ ê²°ê³¼ : 8" << endl;
+			}
+		}
+		break;
+	case EVENT_MOUSEMOVE:
+		if (rect_area[0].contains(Point(x, y))) {
+			if (flags & EVENT_FLAG_LBUTTON) {
+				line(img, ptOld, Point(x, y), Scalar(0, 0, 0), 10);
+				ptOld = Point(x, y);
+			}
+		}
+		break;
+	}
+}
+
+void img_UI(Mat& img) {
+	//ì¹¸ ë‚˜ëˆ„ê¸°
+	line(img, Point(502, 0), Point(502, 500), Scalar(0, 0, 0), 2);
+	line(img, Point(700, 0), Point(700, 500), Scalar(0, 0, 0), 2);
+	for (int i = 1; i < 5; i++) {
+		line(img, Point(502, 500 * i / 5), Point(700, 500 * i / 5), Scalar(0, 0, 0), 2);
+		line(img, Point(700, 500 * i / 5), Point(900, 500 * i / 5), Scalar(0, 0, 0), 2);
+	}
+
+	//UIì„¤ê³„
+	vector<vector<string>> text = { {"Save", "Load", "Clear", "Run", "Exit"},
+		{"contour", "feature2", "feature3", "feature4", "feafure5"} };
+	int fontface = FONT_HERSHEY_SIMPLEX;	//í°íŠ¸ ì¢…ë¥˜
+	double fontscale = 1.0;	//í°íŠ¸ í¬ê¸°
+	int thickness = 2;	//ê¸€ì”¨ ë‘ê»˜
+	for (int i = 0; i < text.size(); i++) {
+		for (int j = 0; j < text[i].size(); j++) {
+			Size TextSize = getTextSize(text[i][j], fontface, fontscale, thickness, 0);	//ê¸€ì”¨ í¬ê¸°
+			Size imgsize = img_size.size();	//ê°ì²´ ì‚¬ì´ì¦ˆ
+			Point org(500 + i * 200 + (imgsize.width - TextSize.width) / 2,
+				500 * j / 5 + (imgsize.height + TextSize.height) / 2);
+			putText(img, text[i][j], org, fontface, fontscale, Scalar(0, 0, 0), thickness);
+		}
+	}
+}
