@@ -7,17 +7,17 @@ Mat img(500, 900, CV_8UC3, Scalar(255, 255, 255));	//3채널 컬러영상
 Mat img_size(500 / 5, 200, CV_8UC3, Scalar(255, 255, 255));
 Mat draw_img;
 Mat gray, bin;
-Point ptOld, startpt1, startpt2, endpt;
-string file_name, window_name;
+Point ptOld;
+string file_name;
 
 void on_mouse(int event, int x, int y, int flags, void*);	//마우스 이벤트
 void img_UI(Mat& img);	//영상 UI 그리기 함수
-int ProjectRun(Mat img, int count);	//숫자 인식 함수
-Mat morph(Mat img, Point staratpt1, Point startpt2, Point endpt, int count);	//모폴로지 연산
-Mat bounding_img(Mat img, int count);	//바운딩박스
-int getContourCount(Mat img, int count);	//외곽선 개수
-Point getCenterPt(Mat img, int count);	//무게중심 좌표 비
-int getStrokeCount(int count);	//획 수
+int ProjectRun(Mat img);	//숫자 인식 함수
+Mat morph(Mat img);	//모폴로지 연산
+Mat bounding_img(Mat img);	//바운딩박스
+int getContourCount(Mat img);	//외곽선 개수
+Point getCenterPt(Mat img);	//무게중심 좌표 비
+Point getRatioPt(Mat img);	//가로 세로 비
 
 int main() {
 	img_UI(img);	//UI그리기 함수 호출
@@ -31,7 +31,6 @@ int main() {
 }
 
 void on_mouse(int event, int x, int y, int flags, void*) {
-	static int count = 0;	//획 수를 카운팅하기 위한 변수
 	imshow("img", img);
 	Rect rect_area[] = {
 		Rect(0, 0, 500, 500),	//0. 입력창 영역
@@ -42,16 +41,13 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		Rect(501, 500 * 4 / 5 + 1, 199, 99),	//5. exit 영역
 		Rect(700, 0, 199, 99),	//6. contour 영역
 		Rect(700, 500 / 5 + 1, 199, 99),	//7. center 영역
-		Rect(700, 500 * 2 / 5 + 1, 199, 99),	//8. stroke 영역
+		Rect(700, 500 * 2 / 5 + 1, 199, 99),	//8. ratio 영역
 		Rect(700, 500 * 3 / 5 + 1, 199, 99),	//9.
 		Rect(700, 500 * 4 / 5 + 1, 199, 99)	//10.
 	};
 	switch (event) {
-	startpt1, startpt2, endpt;
 	case EVENT_LBUTTONDOWN:
 		ptOld = Point(x, y);
-		if (count == 0) startpt1 = Point(x, y);
-		else if (count == 1) startpt2 = Point(x, y);
 
 		if (rect_area[1].contains(Point(x, y))) {	//save
 			cout << "save press" << endl;
@@ -70,14 +66,13 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		else if (rect_area[3].contains(Point(x, y))) {	//clear
 			cout << "clear press" << endl;
 			rectangle(img, Rect(0, 0, 501, 501), Scalar(255, 255, 255), -1);
-			count = 0;
 		}
 		else if (rect_area[4].contains(Point(x, y))) {	//run
 			cout << "run press" << endl;
 
-			int num = ProjectRun(img, count);
-
-			cout << "결과 : " << num << endl;
+			int num = ProjectRun(img);
+			if (num == -1) cout << "recognition failed!" << endl;
+			else cout << "결과 : " << num << endl;
 		}
 		else if (rect_area[5].contains(Point(x, y))) {	//exit
 			cout << "exit press" << endl;
@@ -86,8 +81,8 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		}
 		else if (rect_area[6].contains(Point(x, y))) {	//contour
 			cout << "contour press" << endl;
-			
-			int contour_count = getContourCount(img, count);
+
+			int contour_count = getContourCount(img);
 
 			cout << "외곽선 갯수 : " << contour_count << endl;
 			if (contour_count == 1) {
@@ -100,34 +95,24 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 				cout << "예상 결과 : 8" << endl;
 			}
 		}
-		else if (rect_area[7].contains(Point(x, y))) {	//무게중심
+		else if (rect_area[7].contains(Point(x, y))) {	//무게중심 비
 			cout << "center press" << endl;
-			
-			Point centerPos = getCenterPt(img, count);
 
-			cout << "X : " << centerPos.x << "%" << endl;
-			cout << "Y : " << centerPos.y << "%" << endl;
+			Point center_pt = getCenterPt(img);
+
+			cout << "X : " << center_pt.x << "%" << endl;
+			cout << "Y : " << center_pt.y << "%" << endl;
 		}
-		else if (rect_area[8].contains(Point(x, y))) {	//획
-			cout << "stroke press" << endl;
+		else if (rect_area[8].contains(Point(x, y))) {	//가로세로 비율
+			cout << "ratio press" << endl;
 
-			bin = bounding_img(img, count);
+			Point ratio_pt = getRatioPt(img);
 
-			cout << "전체 획 수 : " << count << endl;
-			if (count == 1) {
-				cout << "예상 결과 : 0, 1, 2, 3, 6, 7, 8, 9" << endl;
-			}
-			else if (count == 2) {
-				cout << "예상 결과 : 4, 5, 7" << endl;
-			}
-			imshow("boundingbox", bin);
+			cout << "rows : " << ratio_pt.x << "%" << endl;
+			cout << "cols : " << ratio_pt.y << "%" << endl;
 		}
 		break;
 	case EVENT_LBUTTONUP:
-		if (rect_area[0].contains(Point(x, y))) {
-			endpt = Point(x, y);
-			count++;
-		}
 		break;
 	case EVENT_MOUSEMOVE:
 		if (rect_area[0].contains(Point(x, y))) {
@@ -139,39 +124,33 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		break;
 	}
 }
-int ProjectRun(Mat img, int count) {
-	int contour_count = getContourCount(img, count);
-	Point center_pt = getCenterPt(img, count);
-	int stroke_count = getStrokeCount(count);
+int ProjectRun(Mat img) {
+	bin = bounding_img(img);
+	int contour_count = getContourCount(img);
+	Point center_pt = getCenterPt(img);
+	Point ratio_pt = getRatioPt(img);
 
 	if (contour_count == 3) return 8;	//외곽선 3개 
 	else if (contour_count == 2) {	//외곽선 2개 - 0,4,6,9
-		if (stroke_count == 2) return 4;	//2획
-		else if (stroke_count == 1) {	//1획 - 0,6,9
-			if (abs(center_pt.x - center_pt.y) < 10) return 0;
-			else if (center_pt.y < 50) return 9;
-			else if (center_pt.y > 50) return 6;
-		}
+		if (abs(center_pt.x - center_pt.y) < 15 && center_pt.x > 45 && center_pt.y < 55) return 0;
+		else if (center_pt.y < 50 && center_pt.x > 50) return 9;
+		else if (center_pt.y > 50) return 6;
+		else return 4;
 	}
 	else if (contour_count == 1) {	//외곽선 1개 - 1,2,3,5,7
-		if (stroke_count == 2) {	//2획 - 5,7
-			if (abs(center_pt.x - center_pt.y) > 15) return 7;
-			else return 5;
-		}
-		else if (stroke_count == 1) {	//1획 - 1,2,3,7
-			if (abs(center_pt.x - center_pt.y) > 15) return 7;
-		}
+		if (ratio_pt.y - ratio_pt.x > 50) return 1;
 	}
+	return -1;
 }
-int getContourCount(Mat img, int count) {	//외곽선 개수
-	bin = bounding_img(img, count);
+int getContourCount(Mat img) {	//외곽선 개수
+	bin = bounding_img(img);
 	vector<vector<Point>> contours;
 	findContours(bin, contours, RETR_LIST, CHAIN_APPROX_NONE);
 	imshow("boundingbox", bin);
 	return contours.size();
 }
-Point getCenterPt(Mat img, int count) {	//무게중심 좌표 비
-	bin = bounding_img(img, count);
+Point getCenterPt(Mat img) {	//무게중심 좌표 비
+	bin = bounding_img(img);
 
 	Mat labels, stats, centroids;
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
@@ -184,10 +163,19 @@ Point getCenterPt(Mat img, int count) {	//무게중심 좌표 비
 	imshow("boundingbox", bin);
 	return Point(per_x, per_y);
 }
-int getStrokeCount(int count) {
-	return count;
+Point getRatioPt(Mat img) {
+	bin = bounding_img(img);
+
+	Mat labels, stats, centroids;
+	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
+	int width = stats.at<int>(1, 2);  // width
+	int height = stats.at<int>(1, 3); // height
+	int per_rows = (double)width / (width + height) * 100;
+	int per_cols = (double)height / (width + height) * 100;
+	imshow("boundingbox", bin);
+	return Point(per_rows, per_cols);
 }
-Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) {	//모폴로지 연산
+Mat morph(Mat img) {	//모폴로지 연산
 	Mat bin;
 	draw_img = img(Rect(0, 0, 500, 500));
 	cvtColor(draw_img, gray, COLOR_BGR2GRAY);
@@ -195,20 +183,7 @@ Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) {	//�
 
 	Mat labels, stats, centroids;
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
-	if (count == 1) {	//1획이면 시작점과 끝점 거리 비교
-		double distance = sqrt(pow(endpt.x - startpt1.x, 2) + pow(endpt.y - startpt1.y, 2));
-		if (distance < 100) {
-			line(bin, startpt1, endpt, Scalar(255), 5);
-		}
-	}
-	else if (count == 2) {	//2획이면 각 획의 시작점 거리 비교
-		double distance = sqrt(pow(startpt2.x - startpt1.x, 2) + pow(startpt2.y - startpt1.y, 2));
-		if (distance < 100) {
-			line(bin, startpt1, startpt2, Scalar(255), 5);
-		}
-	}
 
-	morphologyEx(bin, bin, MORPH_CLOSE, Mat(20, 20, CV_8UC1));
 	int morph_size = 10;
 	if (cnt > 2) {
 		while (true) {
@@ -218,16 +193,20 @@ Mat morph(Mat img, Point startpt1, Point startpt2, Point endpt, int count) {	//�
 			morph_size += 3;
 		}
 	}
-
 	return bin;
 }
 
-Mat bounding_img(Mat img, int count) {	//바운딩 박스
-	Mat bin = morph(img, startpt1, startpt2, endpt, count);
+Mat bounding_img(Mat img) {	//바운딩 박스
+	Mat bin = morph(img);
+
 	Mat labels, stats, centroids;
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
 
 	int* p = stats.ptr<int>(1);
+
+	int rows = (p[0] + p[2]) / 10;	//10은 임의의 값
+	int cols = (p[1] + p[3]) / 10;
+	morphologyEx(bin, bin, MORPH_CLOSE, Mat(rows, cols, CV_8UC1));
 
 	bin = bin(Rect(p[0], p[1], p[2], p[3]));
 	return bin;
@@ -244,7 +223,7 @@ void img_UI(Mat& img) {
 
 	//UI설계
 	vector<vector<string>> text = { {"Save", "Load", "Clear", "Run", "Exit"},
-		{"contour", "center", "stroke", "feature4", "feafure5"} };
+		{"contour", "center", "ratio", "feature4", "feafure5"} };
 	int fontface = FONT_HERSHEY_SIMPLEX;	//폰트 종류
 	double fontscale = 1.0;	//폰트 크기
 	int thickness = 2;	//글씨 두께
