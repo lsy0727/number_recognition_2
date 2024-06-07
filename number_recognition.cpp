@@ -11,13 +11,15 @@ Point ptOld;
 string file_name;
 
 void on_mouse(int event, int x, int y, int flags, void*);	//마우스 이벤트
-void img_UI(Mat& img);	//영상 UI 그리기 함수
+void img_UI(Mat& img);	//UI 그리기 함수
 int ProjectRun(Mat img);	//숫자 인식 함수
 Mat morph(Mat img);	//모폴로지 연산
 Mat bounding_img(Mat img);	//바운딩박스
 int getContourCount(Mat img);	//외곽선 개수
 Point getCenterPt(Mat img);	//무게중심 좌표 비
 Point getRatioPt(Mat img);	//가로 세로 비
+Point getDistance(Mat img);	//기울어진 영상 회전 후 가로 세로 비
+int SearchCount(Mat img);
 
 int main() {
 	img_UI(img);	//UI그리기 함수 호출
@@ -42,7 +44,7 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		Rect(700, 0, 199, 99),	//6. contour 영역
 		Rect(700, 500 / 5 + 1, 199, 99),	//7. center 영역
 		Rect(700, 500 * 2 / 5 + 1, 199, 99),	//8. ratio 영역
-		Rect(700, 500 * 3 / 5 + 1, 199, 99),	//9.
+		Rect(700, 500 * 3 / 5 + 1, 199, 99),	//9. rot_ratio 영역
 		Rect(700, 500 * 4 / 5 + 1, 199, 99)	//10.
 	};
 	switch (event) {
@@ -111,8 +113,18 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 			cout << "rows : " << ratio_pt.x << "%" << endl;
 			cout << "cols : " << ratio_pt.y << "%" << endl;
 		}
-		break;
-	case EVENT_LBUTTONUP:
+		else if (rect_area[9].contains(Point(x, y))) {
+			cout << "rot_ratio press" << endl;
+
+			Point distance_pt = getDistance(img);
+
+			cout << "rows : " << distance_pt.x << "%" << endl;
+			cout << "cols : " << distance_pt.y << "%" << endl;
+		}
+		else if (rect_area[10].contains(Point(x, y))) {
+			int count = SearchCount(img);
+			cout << count << endl;
+		}
 		break;
 	case EVENT_MOUSEMOVE:
 		if (rect_area[0].contains(Point(x, y))) {
@@ -129,16 +141,18 @@ int ProjectRun(Mat img) {
 	int contour_count = getContourCount(img);
 	Point center_pt = getCenterPt(img);
 	Point ratio_pt = getRatioPt(img);
+	Point distance_pt = getDistance(img);
 
 	if (contour_count == 3) return 8;	//외곽선 3개 
 	else if (contour_count == 2) {	//외곽선 2개 - 0,4,6,9
-		if (abs(center_pt.x - center_pt.y) < 15 && center_pt.x > 45 && center_pt.y < 55) return 0;
+		if (abs(center_pt.x - center_pt.y) < 15 && center_pt.x > 40 && center_pt.y < 60) return 0;
 		else if (center_pt.y < 50 && center_pt.x > 50) return 9;
 		else if (center_pt.y > 50) return 6;
 		else return 4;
 	}
-	else if (contour_count == 1) {	//외곽선 1개 - 1,2,3,5,7
-		if (ratio_pt.y - ratio_pt.x > 50) return 1;
+	else if (contour_count == 1) {	//외곽선 1개 - 1,2,3,4,5,7
+		if (ratio_pt.y - ratio_pt.x > 70 || abs(distance_pt.y - distance_pt.x) > 70) return 1;
+		
 	}
 	return -1;
 }
@@ -175,6 +189,39 @@ Point getRatioPt(Mat img) {
 	imshow("boundingbox", bin);
 	return Point(per_rows, per_cols);
 }
+Point getDistance(Mat img) {
+	bin = bounding_img(img);
+	vector<vector<Point>> contours;
+	findContours(bin, contours, RETR_LIST, CHAIN_APPROX_NONE);
+	RotatedRect rot_rect = minAreaRect(contours[0]);
+	Point2f rot_rect_p[4];
+	rot_rect.points(rot_rect_p);
+	float width = norm(rot_rect_p[1] - rot_rect_p[2]);
+	float height = norm(rot_rect_p[0]- rot_rect_p[1]);
+	int per_rows = width / (width + height) * 100;
+	int per_cols = height / (width + height) * 100;
+	imshow("boundingbox", bin);
+	return Point(per_rows, per_cols);
+}
+int SearchCount(Mat img) {
+	bin = bounding_img(img);
+	int max_count = 0;
+	for (int i = 5; i < bin.cols; i++) {
+		if (i > 0 && i < bin.cols) {
+			Mat l_dst = bin(Rect(0, 0, i, bin.rows));	//왼쪽 객체
+			Mat r_dst = bin(Rect(i, 0, bin.cols - i, bin.rows));	//오른쪽 객체
+			cout << "sdjfllsajl" << endl;
+			int l_count = getContourCount(l_dst);
+			cout << "adsgagvbas" << endl;
+			int r_count = getContourCount(r_dst);
+			cout << "bsdafla" << endl;
+			if (max_count < l_count + r_count) max_count = l_count + r_count;
+		}
+		
+	}
+	return max_count;
+}
+
 Mat morph(Mat img) {	//모폴로지 연산
 	Mat bin;
 	draw_img = img(Rect(0, 0, 500, 500));
@@ -223,7 +270,7 @@ void img_UI(Mat& img) {
 
 	//UI설계
 	vector<vector<string>> text = { {"Save", "Load", "Clear", "Run", "Exit"},
-		{"contour", "center", "ratio", "feature4", "feafure5"} };
+		{"contour", "center", "ratio", "rot_ratio", "feafure5"} };
 	int fontface = FONT_HERSHEY_SIMPLEX;	//폰트 종류
 	double fontscale = 1.0;	//폰트 크기
 	int thickness = 2;	//글씨 두께
