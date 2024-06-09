@@ -1,4 +1,6 @@
 # number_recognition_2
+
+https://www.youtube.com/watch?v=KV629kuFwbU
  
 # 추가 내용
 
