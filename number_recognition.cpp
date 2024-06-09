@@ -161,7 +161,7 @@ Point getCenterPt(Mat img) {	//무게중심 좌표 비
 	imshow("boundingbox", bin);
 	return Point(per_x, per_y);
 }
-Point SearchCount(Mat img) {
+Point SearchCount(Mat img) {	//객체 2분할 외곽선 개수
 	draw_img = img(Rect(0, 0, 500, 500));
 	bin = ~draw_img;
 	morphologyEx(bin, bin, MORPH_CLOSE, Mat(5, 20, CV_8UC1));
@@ -188,7 +188,7 @@ Point SearchCount(Mat img) {
 	imshow("boundingbox", bin);
 	return Point(cols_count, rows_count);
 }
-tuple<int, int, int, int> PixelCount(Mat img) {
+tuple<int, int, int, int> PixelCount(Mat img) {	//가로, 세로로 나눴을 때 객체의 픽셀 비율
 	draw_img = img(Rect(0, 0, 500, 500));
 	bin = ~draw_img;
 	morphologyEx(bin, bin, MORPH_CLOSE, Mat(5, 20, CV_8UC1));
