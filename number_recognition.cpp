@@ -43,7 +43,7 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		Rect(700, 0, 199, 99),	//6. contour 영역
 		Rect(700, 500 / 5 + 1, 199, 99),	//7. center 영역
 		Rect(700, 500 * 2 / 5 + 1, 199, 99),	//8. split contour 영역
-		Rect(700, 500 * 3 / 5 + 1, 199, 99),	//9. 
+		Rect(700, 500 * 3 / 5 + 1, 199, 99),	//9. split pixel 영역
 		Rect(700, 500 * 4 / 5 + 1, 199, 99)	//10.
 	};
 	switch (event) {
@@ -71,6 +71,10 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		else if (rect_area[4].contains(Point(x, y))) {	//run
 			cout << "run press" << endl;
 
+
+			int num = ProjectRun(img);
+			if (num == -1) cout << "recognition failed!" << endl;
+			else cout << "결과 : " << num << endl;
 		}
 		else if (rect_area[5].contains(Point(x, y))) {	//exit
 			cout << "exit press" << endl;
@@ -109,7 +113,7 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 			cout << "y축으로 나눴을 때 : " << count.x << endl;
 			cout << "x축으로 나눴을 때 : " << count.y << endl;
 		}
-		else if (rect_area[9].contains(Point(x, y))) {
+		else if (rect_area[9].contains(Point(x, y))) {	//분할 객체 픽셀 개수 비
 			cout << "pixel count press" << endl;
 
 			int u_pixel_count, d_pixel_count, l_pixel_count, r_pixel_count;
@@ -132,7 +136,39 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 	}
 }
 int ProjectRun(Mat img) {
-	
+	bin = morph(img);
+	bin = bounding_img(bin);
+	int contour_count = getContourCount(img);
+	Point center_pt = getCenterPt(img);
+	Point count = SearchCount(img);
+	int u_count, d_count, l_count, r_count;
+	tie(u_count, d_count, l_count, r_count) = PixelCount(img);
+
+	if (contour_count == 3) return 8;	//외곽선 3개
+	else if (contour_count == 2) {	//외곽선 2개 - 0,4,6,9
+		if (abs(center_pt.x - center_pt.y) < 15 && center_pt.x > 40 && center_pt.y < 60
+			&& abs(u_count - d_count) < 10 && abs(l_count - r_count) < 10) return 0;
+		else if (center_pt.y < 50 && center_pt.x > 50 && abs(u_count - d_count) > 50) return 9;
+		else if (center_pt.y > 50) return 6;
+		else return 4;
+	}
+	else if (contour_count == 1) {	//외곽선 1개 - 1,2,3,4,5,7
+		if (count.x == 2 && count.y == 2) return 1;
+		else if (count.x == 4) {	//2,5,7
+			if (count.y == 3) {
+				if (center_pt.y > 55) return 2;
+				else if (l_count - r_count > 20) return 5;
+				else if (center_pt.y <= 55 && center_pt.x > 45) return 7;
+			}
+			else return 5;
+		}
+		else if (count.x == 3) return 7;
+		else if (count.x == 5) {	//y축으로 나눴을 때 외곽선 최대 개수 5 - 3,5
+			if (l_count > r_count) return 5;
+			else if (l_count < r_count) return 3;
+		}
+	}
+	return -1;
 }
 int getContourCount(Mat img) {	//외곽선 개수
 	bin = morph(img);
@@ -144,6 +180,7 @@ int getContourCount(Mat img) {	//외곽선 개수
 	return contours.size();
 }
 Point getCenterPt(Mat img) {	//무게중심 좌표 비
+	vector<int> center_res;
 	bin = morph(img);
 	bin = bounding_img(bin);
 
@@ -155,13 +192,22 @@ Point getCenterPt(Mat img) {	//무게중심 좌표 비
 	int center_y = centroids.at<double>(1, 1); // 무게중심 y좌표
 	//비율 계산
 	int per_x = (double)center_x / width * 100;
+	center_res.push_back(per_x);
 	int per_y = (double)center_y / height * 100;
+	center_res.push_back(per_y);
+
+	if (per_x >= 40 && per_x <= 60 && per_y >= 40 && per_y <= 60) center_res.push_back(0);
+	if (per_x >= 20 && per_x <= 60 && per_y >= 40 && per_y <= 55) center_res.push_back(1);
+	if (per_x >= 35 && per_x <= 70 && per_y >= 50 && per_y <= 70) center_res.push_back(2);
+	if (per_x >= 50 && per_x <= 70 && per_y >= 35 && per_y <= 50) center_res.push_back(3);
+	if (per_x >= 25 && per_x <= 50 && per_y >= 35 && per_y <= 45) center_res.push_back(4);
+	
 	cvtColor(bin, bin, COLOR_GRAY2BGR);
 	circle(bin, Point(center_x, center_y), 2, Scalar(0, 0, 255), 2, -1);
 	imshow("boundingbox", bin);
 	return Point(per_x, per_y);
 }
-Point SearchCount(Mat img) {	//객체 2분할 외곽선 개수
+Point SearchCount(Mat img) {
 	draw_img = img(Rect(0, 0, 500, 500));
 	bin = ~draw_img;
 	morphologyEx(bin, bin, MORPH_CLOSE, Mat(5, 20, CV_8UC1));
@@ -188,7 +234,7 @@ Point SearchCount(Mat img) {	//객체 2분할 외곽선 개수
 	imshow("boundingbox", bin);
 	return Point(cols_count, rows_count);
 }
-tuple<int, int, int, int> PixelCount(Mat img) {	//가로, 세로로 나눴을 때 객체의 픽셀 비율
+tuple<int, int, int, int> PixelCount(Mat img) {
 	draw_img = img(Rect(0, 0, 500, 500));
 	bin = ~draw_img;
 	morphologyEx(bin, bin, MORPH_CLOSE, Mat(5, 20, CV_8UC1));
