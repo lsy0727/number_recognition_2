@@ -195,12 +195,6 @@ Point getCenterPt(Mat img) {	//무게중심 좌표 비
 	center_res.push_back(per_x);
 	int per_y = (double)center_y / height * 100;
 	center_res.push_back(per_y);
-
-	if (per_x >= 40 && per_x <= 60 && per_y >= 40 && per_y <= 60) center_res.push_back(0);
-	if (per_x >= 20 && per_x <= 60 && per_y >= 40 && per_y <= 55) center_res.push_back(1);
-	if (per_x >= 35 && per_x <= 70 && per_y >= 50 && per_y <= 70) center_res.push_back(2);
-	if (per_x >= 50 && per_x <= 70 && per_y >= 35 && per_y <= 50) center_res.push_back(3);
-	if (per_x >= 25 && per_x <= 50 && per_y >= 35 && per_y <= 45) center_res.push_back(4);
 	
 	cvtColor(bin, bin, COLOR_GRAY2BGR);
 	circle(bin, Point(center_x, center_y), 2, Scalar(0, 0, 255), 2, -1);
