@@ -1,4 +1,4 @@
-![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/93415af2-a834-448d-95e2-9abda8c2baca)# number_recognition_2
+# number_recognition_2
 
 https://www.youtube.com/watch?v=KV629kuFwbU
  
