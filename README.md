@@ -29,6 +29,6 @@ https://github.com/lsy0727/number_recognition_2/blob/dbcf1b982b3b7585a35ed000731
 
 객체의 중심을 기준으로 가로, 세로로 각각 잘랐을 때 두 객체의 픽셀 수의 비율을 구함
 
-![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/37847c00-1647-444c-96ff-c526a3d14954)
+![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/95e2bce4-c752-4877-bff5-d9ed3b7cd7db)
 
 https://github.com/lsy0727/number_recognition_2/blob/9f6ab633e09e81aed46a240c4c44f9faf408d42e/number_recognition.cpp#L191-L224
