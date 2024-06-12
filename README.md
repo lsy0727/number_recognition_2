@@ -1,4 +1,4 @@
-# number_recognition_2
+![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/93415af2-a834-448d-95e2-9abda8c2baca)# number_recognition_2
 
 https://www.youtube.com/watch?v=KV629kuFwbU
  
@@ -19,14 +19,16 @@ https://github.com/lsy0727/number_recognition_2/blob/fe9c795239ed807e8f9f3d6c1e0
 
 3. 객체 2분할 시 외곽선 합의 최대 개수
 
- ![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/6282e8ae-a5bf-45f3-9530-2220342d85c7)
-
 객체를 가로, 세로로 잘랐을 때 각각 외곽선의 개수가 최대가 되는 수를 반환함
+
+ ![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/6282e8ae-a5bf-45f3-9530-2220342d85c7)
 
 https://github.com/lsy0727/number_recognition_2/blob/dbcf1b982b3b7585a35ed0007310924c2499bcef/number_recognition.cpp#L164-L190
 
 4. 객체를 가로, 세로로 잘랐을 때 각각의 픽셀 수의 비율
 
 객체의 중심을 기준으로 가로, 세로로 각각 잘랐을 때 두 객체의 픽셀 수의 비율을 구함
+
+![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/37847c00-1647-444c-96ff-c526a3d14954)
 
 https://github.com/lsy0727/number_recognition_2/blob/9f6ab633e09e81aed46a240c4c44f9faf408d42e/number_recognition.cpp#L191-L224
