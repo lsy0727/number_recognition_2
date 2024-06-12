@@ -13,9 +13,13 @@ https://github.com/lsy0727/number_recognition_2/blob/c4ce281ecc4290fbed49fb7dc57
 
 검출된 객체의 무게중심의 x, y좌표를 구하고 바운딩 박스 크기에 대한 가로, 세로의 비율을 구함
 
+![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/27a99d99-d4e9-4746-9236-3bf19bc9547d)
+
 https://github.com/lsy0727/number_recognition_2/blob/fe9c795239ed807e8f9f3d6c1e0906db65621c92/number_recognition.cpp#L146-L163
 
 3. 객체 2분할 시 외곽선 합의 최대 개수
+
+ ![image](https://github.com/lsy0727/number_recognition_2/assets/92630416/6282e8ae-a5bf-45f3-9530-2220342d85c7)
 
 객체를 가로, 세로로 잘랐을 때 각각 외곽선의 개수가 최대가 되는 수를 반환함
 
