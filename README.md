@@ -1,7 +1,11 @@
 # number_recognition_2
 
+## 특징 추출 기능
 https://www.youtube.com/watch?v=KV629kuFwbU
- 
+
+## 결과
+https://www.youtube.com/watch?v=XTpmx1a2UC4
+
 # 추가 내용
 
 ### 특징
