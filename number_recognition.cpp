@@ -71,7 +71,6 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 		else if (rect_area[4].contains(Point(x, y))) {	//run
 			cout << "run press" << endl;
 
-
 			int num = ProjectRun(img);
 			if (num == -1) cout << "recognition failed!" << endl;
 			else cout << "결과 : " << num << endl;
@@ -110,8 +109,8 @@ void on_mouse(int event, int x, int y, int flags, void*) {
 
 			Point count = SearchCount(img);
 
-			cout << "y축으로 나눴을 때 : " << count.x << endl;
-			cout << "x축으로 나눴을 때 : " << count.y << endl;
+			cout << "y축으로 나눴을 때 최대 외곽선 : " << count.x << endl;
+			cout << "x축으로 나눴을 때 최대 외곽선: " << count.y << endl;
 		}
 		else if (rect_area[9].contains(Point(x, y))) {	//분할 객체 픽셀 개수 비
 			cout << "pixel count press" << endl;
@@ -144,10 +143,10 @@ int ProjectRun(Mat img) {
 	int u_count, d_count, l_count, r_count;
 	tie(u_count, d_count, l_count, r_count) = PixelCount(img);
 
-	if (contour_count == 3) return 8;	//외곽선 3개
+	if (contour_count == 3) return 8;	//외곽선 3개 
 	else if (contour_count == 2) {	//외곽선 2개 - 0,4,6,9
 		if (abs(center_pt.x - center_pt.y) < 15 && center_pt.x > 40 && center_pt.y < 60
-			&& abs(u_count - d_count) < 10 && abs(l_count - r_count) < 10 && l_count < 60) return 0;
+			&& abs(u_count - d_count) < 10 && abs(l_count - r_count) < 10) return 0;
 		else if (center_pt.y < 50 && center_pt.x > 50 && abs(u_count - d_count) > 50) return 9;
 		else if (center_pt.y > 50) return 6;
 		else return 4;
@@ -195,7 +194,7 @@ Point getCenterPt(Mat img) {	//무게중심 좌표 비
 	center_res.push_back(per_x);
 	int per_y = (double)center_y / height * 100;
 	center_res.push_back(per_y);
-
+	
 	cvtColor(bin, bin, COLOR_GRAY2BGR);
 	circle(bin, Point(center_x, center_y), 2, Scalar(0, 0, 255), 2, -1);
 	imshow("boundingbox", bin);
@@ -272,7 +271,7 @@ Mat morph(Mat img) {	//모폴로지 연산
 	int cnt = connectedComponentsWithStats(bin, labels, stats, centroids);
 	int* p = stats.ptr<int>(1);
 
-	int rows = (p[0] + p[2]) / 8;	//8은 임의의 값
+	int rows = (p[0] + p[2]) / 8;	//10은 임의의 값
 	int cols = (p[1] + p[3]) / 8;
 	morphologyEx(bin, bin, MORPH_CLOSE, Mat(rows, cols, CV_8UC1));
 
